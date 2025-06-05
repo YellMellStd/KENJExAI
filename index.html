@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KENJE x AI - 社内FAQbot マニュアル</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans JP', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 32px 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-20px, -20px) rotate(180deg); }
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 24px;
+        }
+
+        .section {
+            margin-bottom: 32px;
+            animation: fadeIn 0.8s ease-out forwards;
+            opacity: 0;
+        }
+
+        .section:nth-child(1) { animation-delay: 0.1s; }
+        .section:nth-child(2) { animation-delay: 0.2s; }
+        .section:nth-child(3) { animation-delay: 0.3s; }
+        .section:nth-child(4) { animation-delay: 0.4s; }
+        .section:nth-child(5) { animation-delay: 0.5s; }
+        .section:nth-child(6) { animation-delay: 0.6s; }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .icon.primary { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .icon.success { background: linear-gradient(135deg, #48bb78, #38a169); }
+        .icon.warning { background: linear-gradient(135deg, #ed8936, #dd6b20); }
+        .icon.info { background: linear-gradient(135deg, #4299e1, #3182ce); }
+        .icon.danger { background: linear-gradient(135deg, #f56565, #e53e3e); }
+
+        .text {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #4a5568;
+            margin-bottom: 16px;
+        }
+
+        .benefits {
+            display: grid;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .benefit-item {
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            padding: 16px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            font-size: 14px;
+            color: #2d3748;
+            transition: transform 0.2s ease;
+        }
+
+        .benefit-item:hover {
+            transform: translateX(4px);
+        }
+
+        .categories {
+            display: grid;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .category-item {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .category-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .category-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .category-desc {
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .dont-list {
+            background: #fed7d7;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .dont-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #742a2a;
+        }
+
+        .dont-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .example-box {
+            background: linear-gradient(135deg, #f0fff4, #c6f6d5);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            border-left: 4px solid #48bb78;
+        }
+
+        .example-title {
+            font-weight: 600;
+            color: #22543d;
+            margin-bottom: 12px;
+        }
+
+        .example-text {
+            font-size: 14px;
+            color: #276749;
+            line-height: 1.6;
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: rgba(255,255,255,0.5);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .troubleshooting {
+            display: grid;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .trouble-item {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 16px;
+            border-left: 4px solid #4299e1;
+        }
+
+        .trouble-situation {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .trouble-solution {
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .security-badge {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 16px 0;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .faq-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+
+        .faq-item {
+            background: white;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-left: 3px solid #667eea;
+            font-size: 14px;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .faq-item:hover {
+            background: #f7fafc;
+            transform: translateX(4px);
+        }
+
+        .faq-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #2d3748, #4a5568);
+            color: white;
+            padding: 24px;
+            text-align: center;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+            }
+            
+            .container {
+                border-radius: 16px;
+            }
+            
+            .header {
+                padding: 24px 16px;
+            }
+            
+            .content {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>KENJE x AI</h1>
+            <div class="subtitle">社内FAQbot マニュアル</div>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <div class="section-title">
+                    <div class="icon primary">AI</div>
+                    このGPTって何？
+                </div>
+                <div class="text">
+                    「KENJE x AI - 社内FAQbot」は、<strong>ケンジグループ専用の社内AIアシスタント</strong>です。
+                    社内マニュアル・FAQ資料に基づいて、<strong>「人に聞かなくても答えがすぐにわかる」</strong>を実現します。
+                </div>
+                <div class="benefits">
+                    <div class="benefit-item">問い合わせる人の時間短縮</div>
+                    <div class="benefit-item">問い合わせに対応する人の負担軽減</div>
+                    <div class="benefit-item">24時間365日、すぐに回答</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <div class="icon success">?</div>
+                    どんなことを聞けるの？
+                </div>
+                <div class="text">
+                    <strong>社内マニュアルに書かれている内容</strong>のみ回答します。
+                    以下のようなカテゴリの質問ができます。
+                </div>
+                <div class="categories">
+                    <div class="category-item">
+                        <div class="category-title">人事・労務</div>
+                        <div class="category-desc">結婚・引越し・退職の手続き、交通費、勤怠、保険証など</div>
+                    </div>
+                    <div class="category-item">
+                        <div class="category-title">A'staff操作</div>
+                        <div class="category-desc">シフト、会計、棚卸、予約表、端末接続など</div>
+                    </div>
+                    <div class="category-item">
+                        <div class="category-title">材料・商品管理</div>
+                        <div class="category-desc">出庫・仕入・振替・棚卸・個人注・マスタ登録など</div>
+                    </div>
+                    <div class="category-item">
+                        <div class="category-title">採用・見学</div>
+                        <div class="category-desc">リクルート対応、学生対応、見学チラシなど</div>
+                    </div>
+                    <div class="category-item">
+                        <div class="category-title">ミルボンID管理</div>
+                        <div class="category-desc">売上登録、修正、キャンセル対応など</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <div class="icon danger">×</div>
+                    聞けないこと
+                </div>
+                <div class="text">
+                    このGPTでは<strong>以下のような内容には絶対に答えません</strong>：
+                </div>
+                <div class="dont-list">
+                    <div class="dont-item">
+                        <span>×</span>
+                        マニュアルに書かれていない情報
+                    </div>
+                    <div class="dont-item">
+                        <span>×</span>
+                        美容業界全体のトレンド・ニュース
+                    </div>
+                    <div class="dont-item">
+                        <span>×</span>
+                        プライベートな相談
+                    </div>
+                    <div class="dont-item">
+                        <span>×</span>
+                        外部システム（市役所、税務署など）の対応方法
+                    </div>
+                </div>
+                <div class="text" style="font-weight: 600; color: #e53e3e;">
+                    「この件、載ってなさそう…」と思ったら、LINEWORKSで確認 or 担当へ問い合わせを！
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <div class="icon info">✓</div>
+                    使い方はカンタン！
+                </div>
+                <div class="text">
+                    <strong>① 質問を入力するだけ</strong>
+                </div>
+                <div class="example-box">
+                    <div class="example-title">例：</div>
+                    <div class="example-text">
+                        ・結婚して名字が変わったらどうする？<br>
+                        ・棚卸ってどうやるの？<br>
+                        ・A'staffでミルボン売上登録するには？
+                    </div>
+                </div>
+                <div class="text">
+                    <strong>② 回答が表示される</strong><br>
+                    → 回答は<strong>社内のマニュアルに基づいた正式な内容</strong>です。
+                </div>
+                <div class="text">
+                    <strong>③ 関連する質問も確認できる</strong><br>
+                    → 「他に気になることない？」と聞いてくれます。
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <div class="icon warning">!</div>
+                    こんなときはどうする？
+                </div>
+                <div class="troubleshooting">
+                    <div class="trouble-item">
+                        <div class="trouble-situation">回答がなかった</div>
+                        <div class="trouble-solution">「この内容はマニュアルに記載がありません」と表示されます。</div>
+                    </div>
+                    <div class="trouble-item">
+                        <div class="trouble-situation">表記が分かりにくい</div>
+                        <div class="trouble-solution">そのままGPTに「もっとわかりやすく教えて」と聞いてOK！</div>
+                    </div>
+                    <div class="trouble-item">
+                        <div class="trouble-situation">マニュアルを更新してほしい</div>
+                        <div class="trouble-solution">担当部署に「この件、マニュアルに入れてほしい」と共有してください。</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="security-badge">
+                    情報は社内限定！
+                    このGPTはケンジグループ内のスタッフのみ利用可能で、外部には情報が漏れません。安心して使ってください。
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <div class="icon primary">?</div>
+                    よくある質問
+                </div>
+                <div class="faq-section">
+                    <div class="faq-item">1. A'staffの予約表でスタッフの並び順を変える方法は？</div>
+                    <div class="faq-item">2. 店販商品を間違って業務で使っちゃった。どう処理する？</div>
+                    <div class="faq-item">3. マイナンバーカードを保険証として使うには？</div>
+                </div>
+                <div class="text">
+                    番号で答えてもOK！または別の質問も自由に入力してください。
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            KENJE x AI - 社内FAQbotは気軽に質問ができるツールです。<br><br>
+            問い合わせの「ちょっと聞きたい」にすばやく答えられることで、<br>
+            <strong>スタッフの皆さんがよりスムーズに・気持ちよく仕事ができる環境をつくる</strong>お手伝いをします！
+        </div>
+    </div>
+</body>
+</html>
